@@ -1,70 +1,55 @@
-import random
-#create a function to simulate the singla and burst error, use rand function to invert the bit in a index
-# has a chance that it hits the same index, but it is a simulation and a event that may occur in real life
-#parameters:
-# n errors
-# bit stream message
+from tabulate import tabulate
 
-def simulate_errors(message, nErrors):
-    for i in range(nErrors):
-        index = random.randint(0, len(message) - 1)
-        message[index] = 0 if message[index] == 1 else 1
+def calculate_row_parity(row, parity_type='even'):
+    parity_bit = 0
+    for bit in row:
+        parity_bit ^= int(bit)
 
+    if parity_type == 'even':
+        return '1' if parity_bit == 1 else '0'
+    elif parity_type == 'odd':
+        return '0' if parity_bit == 1 else '1'
 
+def calculate_column_parity(matrix, parity_type='even'):
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+    column_parity = []
 
+    for col in range(num_cols):
+        parity_bit = 0
+        for row in range(num_rows):
+            parity_bit ^= int(matrix[row][col])
 
-def encode(message, agreement):
-    nOnes = message.count(1)
-    
-    if(agreement == "even"):
-        if nOnes % 2 != 0: 
-            message.append(1) 
-        else: 
-            message.append(0)
-    else:
-        if nOnes % 2 != 1: 
-            message.append(1) 
-        else: 
-            message.append(0)
-    return
+        if parity_type == 'even':
+            column_parity.append('1' if parity_bit == 1 else '0')
+        elif parity_type == 'odd':
+            column_parity.append('0' if parity_bit == 1 else '1')
 
-def parity_check(message, agreement):
-    nOnes = message.count(1)
-    
-    if(agreement == "even"):
-        if nOnes % 2 != 0:
-            print("Error detected the message is ODD")
-        else:
-            print("Parity is correct [EVEN]")
-    else:
-        if nOnes % 2 != 1:
-            print("Error detected the message is EVEN")
-        else:
-            print("Parity is correct [ODD]")
-    return
-
+    return column_parity
 
 def main():
-    message = [1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0]
-    print("Original:\n", message)
-    agreement = 'even'
-    encode(message, agreement)
-    print("\nEncoded " + agreement + ": ")
-    print(message)
-    
-    #without noise
-    print("\nWithout noise")
-    print("Message", message)
-    parity_check(message, agreement)
-    
-    
-    simulate_errors(message, 3)
-    print("\nReceived: ")
-    print("Message: ", message)
-    parity_check(message, agreement)
-    
-    
-    
+    # Example data
+    data = [
+        "1101011011",
+        "1010101010",
+        "0101010101"
+    ]
+
+    # Calculate row parity
+    row_parity = [calculate_row_parity(row, 'even') for row in data]
+
+    # Calculate column parity
+    column_parity = calculate_column_parity(data, 'even')
+
+    # Prepare data for table
+    table_data = [
+        ["Data", "\n".join(data)],
+        ["Row Parity Bits", "\n".join(row_parity)],
+        ["Column Parity Bits", "".join(column_parity)]
+    ]
+
+    # Print table
+    print(tabulate(table_data, headers=["Description", "Value"], tablefmt="grid"))
 
 if __name__ == "__main__":
     main()

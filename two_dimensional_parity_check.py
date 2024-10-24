@@ -25,10 +25,8 @@ def encode_data(data, agreement):
     for row in data:
         nOnes = np.count_nonzero(row == '1')
         if agreement == 'even':
-            # Even parity check
             rows.append('0' if nOnes % 2 == 0 else '1')
         else:
-            # Odd parity check
             rows.append('1' if nOnes % 2 == 0 else '0')
     
     # Check column-wise parity
@@ -36,22 +34,20 @@ def encode_data(data, agreement):
         col_data = data[:, col_idx]
         num_of_ones = np.count_nonzero(col_data == '1')
         if agreement == 'even':
-            # Even parity: set '1' if even number of '1's, else '0'
             cols.append('0' if num_of_ones % 2 == 0 else '1')
         else:
-            # Odd parity: set '1' if odd number of '1's, else '0' (opposite of agreement)
-            cols.append('0' if num_of_ones % 2 == 1 else '1')
+            cols.append('1' if num_of_ones % 2 == 0 else '0')
 
     # Append column parity to data
     parity_data = np.vstack([data, cols])
     
-    # Add the final row parity (rows[] list) as the last element in each column
-    final_row = np.array(rows + [''])  # Include one extra spot for column parity
+    # Add the final row parity as the last element in each column
+    final_row = np.array(rows + ['']) 
     parity_data = np.column_stack([parity_data, final_row])
     
     # Compute the final bottom-right parity bit
     total_ones = np.count_nonzero(parity_data == '1')
-    if agreement == 0:  # Even parity
+    if agreement == 'even':  # Even parity
         final_bit = '0' if total_ones % 2 == 0 else '1'
     else:  # Odd parity
         final_bit = '1' if total_ones % 2 == 0 else '0'
@@ -61,39 +57,49 @@ def encode_data(data, agreement):
     
     return parity_data
 
+
 def check_parity(data, agreement):
     parity = True
     nRows, nCols = data.shape
     
-    for row in data:
+    # Check row-wise parity
+    for row in data[:-1]: 
         nOnes = np.count_nonzero(row == '1')
-        if agreement == 0:
-            if nOnes % 2 != 0: parity = False
-        else:
-            if nOnes % 2 != 1: parity = False
-    
+        if agreement == 'even':
+            if nOnes % 2 != 0:
+                parity = False
+                break  
+        else:  # Odd parity
+            if nOnes % 2 != 1:
+                parity = False
+                break 
     # Check column-wise parity
     for col_idx in range(nCols):
         col_data = data[:, col_idx]
         num_of_ones = np.count_nonzero(col_data == '1')
-        if agreement == 0:
-           if num_of_ones % 2 != 0: parity = False
-        else:
-            if num_of_ones % 2 != 1: parity = False
+        if agreement == 'even':
+            if num_of_ones % 2 != 0:
+                parity = False
+                break  
+        else:  # Odd parity
+            if num_of_ones % 2 != 1:
+                parity = False
+                break  
     
     return parity
+
 
 
 
 def main():
     # Example data matrix (4x4) with binary data
     data_matrix = np.array([
-        ['1', '0', '0', '0'],
-        ['0', '1', '0', '1'],
-        ['1', '1', '1', '0'],
-        ['0', '0', '1', '1']
+        ['1', '1', '0', '0', '1', '1', '1'],
+        ['1', '0', '1', '1', '1', '0', '1'],
+        ['0', '1', '1', '1', '0', '0', '1'],
+        ['0', '1', '0', '1', '0', '0', '1']
     ])
-    agreement = 'odd'
+    agreement = 'even'
 
     # Calculate 2D parity (odd parity in this case)
     print("Original Data Matrix:")
